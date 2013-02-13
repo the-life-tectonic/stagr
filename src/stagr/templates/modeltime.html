@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+	<head>
+		<link href="http://fonts.googleapis.com/css?family=Quicksand:700|Droid+Sans+Mono|Chivo" type="text/css" rel="stylesheet">
+		<link href="style/style.css" type="text/css" rel="stylesheet"/>
+		<meta charset="utf-8"/>
+		<title>temperature</title>
+		<script type="text/javascript" src="js/suite.js"></script>
+		<script type="text/javascript" src="js/maths.js"></script>
+		<script>
+//<!CDATA[
+var models=[];
+
+function init()
+{
+	var kvlist = unescape(location.search).substring(1).split('&')
+	for (var i = 0; i < kvlist.length; i++) 
+	{
+		kv=kvlist[i].split('=');
+		key=kv[0];
+		value=kv[1];
+		if (key=='model')
+		{
+			models[models.length]=value;
+		}
+		else
+		{
+			if ( console && 'error' in console )
+			{
+				console.error('Unknown query string parameter "'+key+'"');
+			}
+		}
+	}
+	
+	var plots_table=document.getElementById('plots');
+	colrow=rect(models.length);
+	cols=colrow[0];
+	rows=colrow[1];
+	for( r=0; r<rows; r++)
+	{
+		var tr=document.createElement('tr')
+		for( c=0; c<cols; c++)
+		{
+			var td=document.createElement('td')
+			var plot=document.createElement('img')
+			plot.src=models[c+r*cols]+'/plots/'+model.plot_file_prefix+'_modeltime.png'
+			td.appendChild(plot)
+			tr.appendChild(td)
+		}
+		plots_table.appendChild(tr)
+	}
+	
+}
+
+//]]>
+	    </script>   
+	</head>
+	<body onload='init()'>
+		<table id="plots">
+		</table>
+	</body>
+</html> 
+

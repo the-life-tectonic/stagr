@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link href="http://fonts.googleapis.com/css?family=Quicksand:700|Droid+Sans+Mono|Chivo" type="text/css" rel="stylesheet">
+		<link href="style/style.css" type="text/css" rel="stylesheet"/>
+		<meta charset="utf-8"/>
+		<title>temperature</title>
+		<script type="text/javascript" src="js/suite.js"></script>
+		<script>
+//<!CDATA[
+var img_ext='.png'
+var fields=[];
+var models=[];
+var max_frames=0;
+
+function init()
+{
+	var kvlist = unescape(location.search).substring(1).split('&')
+	for (var i = 0; i < kvlist.length; i++) 
+	{
+		kv=kvlist[i].split('=');
+		key=kv[0];
+		value=kv[1];
+		if (key=='field')
+		{
+			fields[fields.length]=value;
+		}
+		else if (key=='model')
+		{
+			models[models.length]=value;
+		}
+		else
+		{
+			if ( console && 'error' in console )
+			{
+				console.error('Unknown query string parameter "'+key+'"');
+			}
+		}
+	}
+	var movie_table=document.getElementById('movies');
+	var tr_header=document.createElement('tr')
+	var th=document.createElement('th')
+	th.innerHTML='&nbsp;';
+	tr_header.appendChild(th)
+	for ( var i in models )
+	{
+		th=document.createElement('th')
+		th.innerHTML=models[i];
+		tr_header.appendChild(th)
+	}
+	movie_table.appendChild(tr_header);
+	for ( var i in fields)
+	{
+		var field=fields[i];
+		var tr=document.createElement('tr')
+		var td=document.createElement('td')
+		td.innerHTML=stagyy_fields[field].name
+		tr.appendChild(td)
+		for ( var j in models )
+		{
+			var model_name=models[j]
+			var model=suite.model_map[model_name]
+			max_frames=Math.max(max_frames,model.frames);
+			var td=document.createElement('td')
+			var plot=document.createElement('img')
+			plot.id=model_name+'_'+field+'_frame'
+			plot.src=model_name+'/plots/'+model.plot_file_prefix+'_'+field+'00000'+img_ext
+			td.appendChild(plot)
+			tr.appendChild(td)
+		}
+		movie_table.appendChild(tr)
+	}
+	document.getElementById('frame-value').innerHTML='00000';
+	// Create forward/back buttons for non-range supporting browsers
+	var slider=document.getElementById('frame-number')
+	slider.max=max_frames-1;
+	if (slider.type!='range')
+	{
+		slider.style.display="none";
+		document.getElementById('frame-fwd').style.display="";
+		document.getElementById('frame-back').style.display="";
+		document.getElementById('frame-start').style.display="";
+		document.getElementById('frame-end').style.display="";
+	}
+}
+
+function frame_forward()
+{
+	var slider=document.getElementById('frame-number')
+	if (parseInt(slider.value)<parseInt(slider.max))
+	{
+		slider.value=parseInt(slider.value)+1;
+	}
+	changeFrame()
+}
+
+function frame_backward()
+{
+	var slider=document.getElementById('frame-number')
+	if (slider.value>0)
+	{
+		slider.value=parseInt(slider.value)-1;
+	}
+	changeFrame()
+}
+
+function frame_end()
+{
+	var slider=document.getElementById('frame-number')
+	slider.value=slider.max
+	changeFrame()
+}
+
+function frame_start()
+{
+	var slider=document.getElementById('frame-number')
+	slider.value=0
+	changeFrame()
+}
+
+function keydown()
+{
+    console.log(event.keyCode)
+    if(event.keyCode==37) // left
+    {
+        frame_backward();
+    }
+    else if (event.keyCode==39) // right
+    {
+        frame_forward();
+    }
+    else if (event.keyCode==35) // end
+    {
+        frame_end();
+    }
+    else if (event.keyCode==36) // home
+    {
+        console.log('home');
+        frame_start();
+    }
+    
+}
+
+function changeFrame() 
+{
+	var fn = document.getElementById('frame-number').value;
+	var frame = parseInt(fn)
+	while( fn.length<5 ) { fn='0'+fn } // 0 pad the number
+	document.getElementById('frame-value').innerHTML=fn; // Display the frame number
+
+	for( var i in fields )
+	{
+		var field=fields[i];
+		for( var j in models )
+		{
+			var model_name=models[j]
+			var model=suite.model_map[model_name]
+			var plot = document.getElementById(model_name+'_'+field+'_frame')
+			if (model.last_timestep>=frame)
+			{
+				plot.style.opacity=1.0;
+				var src = model_name+'/plots/'+model.plot_file_prefix+'_'+field+fn+img_ext
+				plot.src=src
+			}	
+			else
+			{
+				plot.style.opacity=0.4;
+// opacity:0.4;
+// filter:alpha(opacity=40); /* For IE8 and earlier */
+			}
+		}
+	}			
+}
+//]]>
+	    </script>   
+	</head>
+	<body onload='init()' onkeydown='keydown(event)'>
+		<div style="width: 706px">
+		<table id="movies">
+		</table>
+		<div id="controls">
+		<input type="button" id="frame-start" onclick="frame_start(event)" style="display: none;" value="|&lt;">
+		<input type="button" id="frame-back" onclick="frame_backward(event)" style="display: none;" value="&lt;">
+		<input type="button" id="frame-fwd" onclick="frame_forward(event)" style="display: none;" value="&gt;">
+		<input type="button" id="frame-end" onclick="frame_end(event)" style="display: none;" value="&gt;|">
+  		<input style="width: 100%" min="0" max="0" onchange="changeFrame(event)" type="range" id="frame-number" value="0">
+		</div>
+		Frame: <span id="frame-value">0</span> 
+		</div>
+	</body>
+</html> 
+
