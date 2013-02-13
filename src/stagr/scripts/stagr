@@ -1,0 +1,5 @@
+#!/bin/bash
+
+SUITE=`basename $PWD`
+mkdir -p html
+${HOME}/bin/stagr.py -v -s ${HOME}/scratch//models/$SUITE/ -r ${HOME}/scratch/reports/$SUITE/html

@@ -21,15 +21,15 @@ src='src/stagr'
 ver=datetime.fromtimestamp(most_recent_mod(src)).strftime('%Y.%m.%d.%H.%M')
 
 setup(
-	name='stagr',
+	name='stagr_mod',
 	description='Python based report generator for StagYY',
 	author='Robert I. Petersen',
 	author_email='rpetersen@ucsd.edu', 
 	version=ver,
-	scripts=['src/stagr/scripts/pardiff.py','src/stagr/scripts/stagr.py'],
-	packages=['stagr'],
-	package_dir={'stagr': 'src/stagr'},
-	package_data={'stagr':['templates/*.html','templates/*.pyt','templates/style/*','templates/js/*','templates/err/*']},
+	scripts=['src/stagr/scripts/pardiff.py','src/stagr/scripts/stagr.py','src/stagr/scripts/stagr'],
+	packages=['stagr_mod'],
+	package_dir={'stagr_mod': 'src/stagr'},
+	package_data={'stagr_mod':['templates/*.html','templates/*.pyt','templates/style/*','templates/js/*','templates/err/*']},
 	license='GPL 2.0', 
 	classifiers=[
 'Development Status :: 4 - Beta',

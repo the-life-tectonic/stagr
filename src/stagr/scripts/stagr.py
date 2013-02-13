@@ -16,9 +16,9 @@ import stagyy.io as sio
 import stagyy.viz as viz
 import stagyy.field as stagyy_field
 import of_pyt.template as pyt
-import stagr
+import stagr_mod
 #from settings import template_dir, working_dir
-template_dir=stagr.templateDir
+template_dir=stagr_mod.templateDir
 working_dir=os.path.expanduser("~/tmp/stagr/")
 if not os.path.exists(working_dir):
 	os.makedirs(working_dir)
