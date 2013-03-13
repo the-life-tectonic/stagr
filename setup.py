@@ -26,7 +26,7 @@ setup(
 	author='Robert I. Petersen',
 	author_email='rpetersen@ucsd.edu', 
 	version=ver,
-	scripts=['src/stagr/scripts/pardiff.py','src/stagr/scripts/stagr.py','src/stagr/scripts/stagr'],
+	scripts=['src/stagr/scripts/pardiff.py','src/stagr/scripts/stagr.py','src/stagr/scripts/stagr','src/stagr/scripts/mpitar.py'],
 	packages=['stagr_mod'],
 	package_dir={'stagr_mod': 'src/stagr'},
 	package_data={'stagr_mod':['templates/*.html','templates/*.pyt','templates/style/*','templates/js/*','templates/err/*']},
