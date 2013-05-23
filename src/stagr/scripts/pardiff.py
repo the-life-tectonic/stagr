@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import argparse
 import logging
 import os
@@ -55,7 +56,7 @@ if __name__ == "__main__":
 		sys.exit()
 
 	# Calculate the differences
-	diffs=sio.par_diff(args.par)
+	diffs=sio.par_diff(args.par,True)
 	# Calculate the width needed for the section/key label
 	label_width=max([ len(h['section'])+len(h['key']) for h in diffs])+1
 	# Calculate the column widths
