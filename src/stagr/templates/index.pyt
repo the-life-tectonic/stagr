@@ -101,6 +101,23 @@ function toggle_all(checkbox,name)
 </tr>
 
 <@
+fields=sorted(set(suite.fields)&set(request.fields))
+@>
+<tr>
+	<td colspan="%(col_span)d" style="text-align: left; border-bottom: none; padding-top: 10px;">
+<@
+import stagyy.field
+for f in fields:
+	field_name=stagyy.field.fields[f].name
+@>
+		<input type="checkbox" name="field" value="%(f)s"> %(field_name)s &nbsp;&nbsp;&nbsp;
+		<input type="button" name="movie.html" value="field plots" onclick="formsubmit(this)">
+		<input type="button" name="modeltime.html" value="model time plots" onclick="formsubmit(this)">
+<@ @>
+</td>
+</tr>
+
+<@
 model_number=0
 styles={ bool: 'text-align: center;',str: 'text-align: left', int: 'text-align: right;', float: 'text-align: right'}
 col_span=len(suite.par_diff)+2
@@ -120,22 +137,6 @@ col_span=len(suite.par_diff)+2
 <@model_number=model_number+1@>
 <@ @>
 
-<@
-fields=sorted(set(suite.fields)&set(request.fields))
-@>
-<tr><td colspan="%(col_span)d" style="text-align: left; border-bottom: none; padding-top: 10px;">
-	<input type="button" name="movie.html" value="field plots" onclick="formsubmit(this)">
-<@
-import stagyy.field
-for f in fields:
-	field_name=stagyy.field.fields[f].name
-@>
-	<input type="checkbox" name="field" value="%(f)s"> %(field_name)s &nbsp;&nbsp;&nbsp;
-<@ @>
-</td></tr>
-<tr><td colspan="%(col_span)d" style="text-align: left; border-bottom: none; padding-top: 10px;">
-	<input type="button" name="modeltime.html" value="model time plots" onclick="formsubmit(this)">
-</td></tr>
 
 </table>
 </form>
