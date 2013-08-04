@@ -6,8 +6,9 @@ import threading
 from mpi4py import MPI
 
 class MPIIterator(threading.Thread):
-    NEXT=4242
-    STOP_ITERATION=4243
+    TAG_ITERATOR=4570
+    NEXT=0
+    STOP_ITERATION=1
 
     def __init__(self,items,source_rank=0,comm=MPI.COMM_WORLD):
         self.source_rank=0
@@ -24,34 +25,35 @@ class MPIIterator(threading.Thread):
 
     def next(self):
         if self.mpi_rank==self.source_rank:
+            #raise StopIteration()
             return self._iter.next()
         else:
-            self.mpi_comm.send(None,dest=self.source_rank,tag=MPIIterator.NEXT)
-            status=MPI.Status()
-            self.mpi_comm.Probe(source=self.source_rank, tag=MPI.ANY_TAG, status=status)
-            if status.tag==MPIIterator.STOP_ITERATION:
-                raise self.mpi_comm.recv(source=self.source_rank, tag=MPIIterator.STOP_ITERATION)
-            elif status.tag==MPIIterator.NEXT:
-                return self.mpi_comm.recv(source=self.source_rank, tag=MPIIterator.NEXT)
+            self.mpi_comm.send({'type':MPIIterator.NEXT},dest=self.source_rank,tag=MPIIterator.TAG_ITERATOR)
+            data = self.mpi_comm.recv(source=self.source_rank, tag=MPIIterator.TAG_ITERATOR)
+            if data['type']==MPIIterator.STOP_ITERATION:
+                raise StopIteration()
+            elif data['type']==MPIIterator.NEXT:
+                return data['value']
 
     def run(self):
         mpi_stopped=0
         while True:
             status=MPI.Status()
-            self.mpi_comm.Probe(source=MPI.ANY_SOURCE, tag=MPIIterator.NEXT, status=status)
-            self.mpi_comm.recv(source=status.source, tag=MPIIterator.NEXT)
+            self.mpi_comm.Probe(source=MPI.ANY_SOURCE, tag=MPIIterator.TAG_ITERATOR, status=status)
+            self.mpi_comm.recv(source=status.source, tag=MPIIterator.TAG_ITERATOR)
             try:
                 item=self._iter.next()
-                self.mpi_comm.send(item,dest=status.source,tag=MPIIterator.NEXT)
-            except StopIteration as item:
-                self.mpi_comm.send(item,dest=status.source,tag=MPIIterator.STOP_ITERATION)
+                self.mpi_comm.send({'type':MPIIterator.NEXT,'value':item},dest=status.source,tag=MPIIterator.TAG_ITERATOR)
+            except StopIteration:
+                self.mpi_comm.send({'type':MPIIterator.STOP_ITERATION},dest=status.source,tag=MPIIterator.TAG_ITERATOR)
                 mpi_stopped+=1
                 if mpi_stopped==self.mpi_comm.Get_size()-1:
                     break;
 
 class  MPILog(threading.Thread):
-    TAG_DONE=4580
     TAG_LOG=4581
+    LOG=0
+    DONE=1
 
     def __init__(self,comm=MPI.COMM_WORLD,logger_rank=0):
         self.logger_rank=logger_rank
@@ -65,22 +67,26 @@ class  MPILog(threading.Thread):
         else:
             atexit.register(self.send_done)
 
+    def _log(self,source,msg):
+        print("[%03d] %s"%(source,msg))
+
     def log(self,msg):
-        self.mpi_comm.send(msg,dest=self.logger_rank,tag=MPILog.TAG_LOG)
+        if self.mpi_rank==self.logger_rank:
+            self._log(self.mpi_rank,msg)
+        else:
+            self.mpi_comm.send({'type':MPILog.LOG,'value':msg},dest=self.logger_rank,tag=MPILog.TAG_LOG)
 
     def send_done(self):
-        self.mpi_comm.send(dest=self.logger_rank,tag=MPILog.TAG_DONE)
+        self.mpi_comm.send({'type':MPILog.DONE},dest=self.logger_rank,tag=MPILog.TAG_LOG)
 
     def run(self):
         mpi_stopped=0
         while True:
             status=MPI.Status()
-            self.mpi_comm.Probe(source=MPI.ANY_SOURCE, tag=MPI.ANY_TAG,status=status)
-            if status.tag==MPILog.TAG_LOG:
-                data = self.mpi_comm.recv(source=status.source, tag=MPILog.TAG_LOG)
-                print("[%03d] %s"%(status.source,data))
-            elif status.tag==MPILog.TAG_DONE:
-                self.mpi_comm.recv(source=status.source, tag=MPILog.TAG_DONE)
+            data=self.mpi_comm.recv(source=MPI.ANY_SOURCE, tag=MPILog.TAG_LOG,status=status)
+            if data['type']==MPILog.LOG:
+                self._log(status.source,data['value'])
+            elif data['type']==MPILog.DONE:
                 mpi_stopped+=1
                 if mpi_stopped==self.mpi_comm.Get_size()-1:
                     break;
